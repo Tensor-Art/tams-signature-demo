@@ -13,8 +13,7 @@ function generate_signature(method, url, body, app_id, private_key_path) {
   const sign = createSign('RSA-SHA256');
   sign.update(to_sign);
   const signature = sign.sign(private_key, "base64");
-  const signature_base64 = Buffer.from(signature).toString("base64");
-  const auth_header = `TAMS-SHA256-RSA app_id=${app_id},nonce_str=${nonce_str},timestamp=${timestamp},signature=${signature_base64}`;
+  const auth_header = `TAMS-SHA256-RSA app_id=${app_id},nonce_str=${nonce_str},timestamp=${timestamp},signature=${signature}`;
   return auth_header;
 }
 
