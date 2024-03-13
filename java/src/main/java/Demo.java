@@ -16,8 +16,8 @@ import java.util.Base64;
 public class Demo {
     private static final String urlPre = "endpoint from your app";
     private static final String jobUrl = "/v1/jobs";
-    private static final String imageUrl = "your app id";
-    private static final String appId = "your private key path";
+    private static final String imageUrl = "/v1/resource/image";
+    private static final String appId = "your app id";
 
     // 需要用以下命令将私钥转为der格式
     // openssl pkcs8 -topk8 -inform PEM -outform DER -in private_key.pem -out private_key.der -nocrypt
