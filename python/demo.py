@@ -7,7 +7,7 @@ import time
 url_pre = "endpoint from your app"
 url = "/v1/jobs"
 app_id = "your app id"
-private_key_path = "your private key path"
+private_key_path = "../private_key.pem"
 
 
 # 文生图

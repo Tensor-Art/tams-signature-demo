@@ -1,0 +1,7 @@
+{
+  "require": {
+    "guzzlehttp/guzzle": "~7",
+    "ext-openssl": "*",
+    "ext-json": "*"
+  }
+}
