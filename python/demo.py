@@ -32,6 +32,13 @@ def text2img():
                             "text": "1girl"
                         }
                     ],
+                    # added strong inspection for parameters
+                    # so sampler and sdVae are necessary now
+                    # for more info, u can refer to the websites below
+                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#sampler
+                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#vae
+                    "sampler": "DPM++ 2M Karras",
+                    "sdVae": "Automatic",
                     "steps": 15,
                     "sd_model": "600423083519508503",
                     "clip_skip": 2,
@@ -72,6 +79,13 @@ def img2img(img_path):
                             "text": "1girl"
                         }
                     ],
+                    # added strong inspection for parameters
+                    # so sampler and sdVae are necessary now
+                    # for more info, u can refer to the websites below
+                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#sampler
+                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#vae
+                    "sampler": "DPM++ 2M Karras",
+                    "sdVae": "Automatic",
                     "steps": 15,
                     "sd_model": "600423083519508503",
                     "clip_skip": 2,

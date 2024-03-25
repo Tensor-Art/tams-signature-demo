@@ -105,6 +105,8 @@ function text2img()
                             "text" => "1girl"
                         ]
                     ],
+                    "sampler" => "DPM++ 2M Karras",
+                    "sdVae" => "Automatic",
                     "steps" => 15,
                     "sd_model" => "600423083519508503",
                     "clip_skip" => 2,
@@ -139,6 +141,8 @@ function img2img($img_path)
                             "text" => "1girl"
                         ]
                     ],
+                    "sampler" => "DPM++ 2M Karras",
+                    "sdVae" => "Automatic",
                     "steps" => 15,
                     "sd_model" => "600423083519508503",
                     "clip_skip" => 2,
