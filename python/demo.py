@@ -15,45 +15,56 @@ url_workflow = '/v1/workflows'
 url_job = "/v1/jobs"
 url_resource = "/v1/resource"
 
+txt2img_data = {
+    "request_id": hashlib.md5(str(int(time.time())).encode()).hexdigest(),
+    "stages": [
+        {
+            "type": "INPUT_INITIALIZE",
+            "inputInitialize": {
+                "seed": -1,
+                "count": 1
+            }
+        },
+        {
+            "type": "DIFFUSION",
+            "diffusion": {
+                "width": 512,
+                "height": 512,
+                "prompts": [
+                    {
+                        "text": "1girl"
+                    }
+                ],
+                # added strong inspection for parameters
+                # so sampler and sdVae are necessary now
+                # for more info, u can refer to the websites below
+                # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#sampler
+                # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#vae
+                "sampler": "DPM++ 2M Karras",
+                "sdVae": "Automatic",
+                "steps": 15,
+                "sd_model": "600423083519508503",
+                "clip_skip": 2,
+                "cfg_scale": 7
+            }
+        }
+    ]
+}
+
+
+def get_job_credits():
+    body = json.dumps(txt2img_data)
+    response = requests.post(f"{url_pre}{url_job}/credits", json=txt2img_data, headers={
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': generate_signature("POST", f"{url_job}/credits", body, app_id, private_key_path)
+    })
+    print(response.text)
+
 
 # 文生图
 def text2img():
-    data = {
-        "request_id": hashlib.md5(str(int(time.time())).encode()).hexdigest(),
-        "stages": [
-            {
-                "type": "INPUT_INITIALIZE",
-                "inputInitialize": {
-                    "seed": -1,
-                    "count": 1
-                }
-            },
-            {
-                "type": "DIFFUSION",
-                "diffusion": {
-                    "width": 512,
-                    "height": 512,
-                    "prompts": [
-                        {
-                            "text": "1girl"
-                        }
-                    ],
-                    # added strong inspection for parameters
-                    # so sampler and sdVae are necessary now
-                    # for more info, u can refer to the websites below
-                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#sampler
-                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#vae
-                    "sampler": "DPM++ 2M Karras",
-                    "sdVae": "Automatic",
-                    "steps": 15,
-                    "sd_model": "600423083519508503",
-                    "clip_skip": 2,
-                    "cfg_scale": 7
-                }
-            }
-        ]
-    }
-    response_data = create_job(data)
+    response_data = create_job(txt2img_data)
     if 'job' in response_data:
         job_dict = response_data['job']
         job_id = job_dict.get('id')
@@ -85,11 +96,6 @@ def img2img(img_path):
                             "text": "1girl"
                         }
                     ],
-                    # added strong inspection for parameters
-                    # so sampler and sdVae are necessary now
-                    # for more info, u can refer to the websites below
-                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#sampler
-                    # https://tams-docs.tusiart.com/docs/api/guide/list-of-constants/#vae
                     "sampler": "DPM++ 2M Karras",
                     "sdVae": "Automatic",
                     "steps": 15,
@@ -232,6 +238,9 @@ def workflow_template_job():
 
 
 if __name__ == '__main__':
+    # 算力预估
+    get_job_credits()
+
     # 文生图
     # text2img()
     # 图生图
@@ -240,4 +249,4 @@ if __name__ == '__main__':
     # 模版相关
     # get_workflow_template(676018193025756628)
     # workflow_template_check()
-    workflow_template_job()
+    # workflow_template_job()
