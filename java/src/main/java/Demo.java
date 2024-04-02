@@ -2,6 +2,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -10,93 +11,136 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.util.Base64;
 
-// for jdk11+
+// for jdk17
 public class Demo {
     private static final String urlPre = "endpoint from your app";
-    private static final String jobUrl = "/v1/jobs";
-    private static final String imageUrl = "/v1/resource/image";
     private static final String appId = "your app id";
 
     // 需要用以下命令将私钥转为der格式
     // openssl pkcs8 -topk8 -inform PEM -outform DER -in private_key.pem -out private_key.der -nocrypt
     private static final String privateKeyPath = "./private_key.der";
 
+    private static final String localUrl = "http://localhost:8080";
+    private static final String workflowUrl = "/v1/workflows";
+    private static final String jobUrl = "/v1/jobs";
+    private static final String imageUrl = "/v1/resource/image";
+
+    private static final String txt2imgData =
+            """
+                    {
+                        "request_id": "%s",
+                        "stages": [
+                            {
+                                "type": "INPUT_INITIALIZE",
+                                "inputInitialize": {
+                                    "seed": -1,
+                                    "count": 1
+                                }
+                            },
+                            {
+                                "type": "DIFFUSION",
+                                "diffusion": {
+                                    "width": 512,
+                                    "height": 512,
+                                    "prompts": [
+                                        {
+                                            "text": "1girl"
+                                        }
+                                    ],
+                                    "sampler": "DPM++ 2M Karras",
+                                    "sdVae": "Automatic",
+                                    "steps": 15,
+                                    "sd_model": "600423083519508503",
+                                    "clip_skip": 2,
+                                    "cfg_scale": 7
+                                }
+                            }
+                        ]
+                    }
+                    """;
+
     public static void main(String[] args) throws Exception {
+//        算力预估
+//        getJobCredits();
+
+//        文生图
 //        text2img();
-//        uploadImg("./test.webp");
+//        图生图
         img2img("./test.webp");
+//        图片上传
+//        uploadImg("./test.webp");
+    }
+
+    public static void getJobCredits() throws Exception {
+        String data = String.format(txt2imgData, md5(Long.toString(System.currentTimeMillis())));
+        String authHeader = SignatureGenerator.generateSignature("POST", jobUrl + "/credits", data, appId, privateKeyPath);
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(urlPre + jobUrl + "/credits"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", authHeader)
+                .POST(HttpRequest.BodyPublishers.ofString(data))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println(response.body());
     }
 
     // 文生图
     public static void text2img() throws Exception {
-        JsonObject data = Json.createObjectBuilder()
-                .add("request_id", md5(Long.toString(System.currentTimeMillis())))
-                .add("stages", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("type", "INPUT_INITIALIZE")
-                                .add("inputInitialize", Json.createObjectBuilder()
-                                        .add("seed", -1)
-                                        .add("count", 1)))
-                        .add(Json.createObjectBuilder()
-                                .add("type", "DIFFUSION")
-                                .add("diffusion", Json.createObjectBuilder()
-                                        .add("width", 512)
-                                        .add("height", 512)
-                                        .add("prompts", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
-                                                        .add("text", "1girl")))
-                                        .add("sampler","DPM++ 2M Karras")
-                                        .add("sdVae","Automatic")
-                                        .add("steps", 15)
-                                        .add("sd_model", "600423083519508503")
-                                        .add("clip_skip", 2)
-                                        .add("cfg_scale", 7))))
-                .build();
-
+        String data = String.format(txt2imgData, md5(Long.toString(System.currentTimeMillis())));
         createJob(data);
     }
 
     // 图生图
     public static void img2img(String imgPath) throws Exception {
         String resourceId = uploadImg(imgPath);
-        JsonObject data = Json.createObjectBuilder()
-                .add("request_id", md5(Long.toString(System.currentTimeMillis())))
-                .add("stages", Json.createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                .add("type", "INPUT_INITIALIZE")
-                                .add("inputInitialize", Json.createObjectBuilder()
-                                        .add("image_resource_id", resourceId)
-                                        .add("count", 1)))
-                        .add(Json.createObjectBuilder()
-                                .add("type", "DIFFUSION")
-                                .add("diffusion", Json.createObjectBuilder()
-                                        .add("width", 512)
-                                        .add("height", 512)
-                                        .add("prompts", Json.createArrayBuilder()
-                                                .add(Json.createObjectBuilder()
-                                                        .add("text", "1girl")))
-                                        .add("sampler","DPM++ 2M Karras")
-                                        .add("sdVae","Automatic")
-                                        .add("steps", 15)
-                                        .add("sd_model", "600423083519508503")
-                                        .add("clip_skip", 2)
-                                        .add("cfg_scale", 7))))
-                .build();
+        String data = String.format("""
+                {
+                        "request_id": "%s",
+                        "stages": [
+                            {
+                                "type": "INPUT_INITIALIZE",
+                                "inputInitialize": {
+                                    "image_resource_id": "%s",
+                                    "count": 1
+                                }
+                            },
+                            {
+                                "type": "DIFFUSION",
+                                "diffusion": {
+                                    "width": 512,
+                                    "height": 512,
+                                    "prompts": [
+                                        {
+                                            "text": "1girl"
+                                        }
+                                    ],
+                                    "sampler": "DPM++ 2M Karras",
+                                    "sdVae": "Automatic",
+                                    "steps": 15,
+                                    "sd_model": "600423083519508503",
+                                    "clip_skip": 2,
+                                    "cfg_scale": 7
+                                }
+                            }
+                        ]
+                    }
+                """, md5(Long.toString(System.currentTimeMillis())), resourceId);
 
         createJob(data);
     }
 
-    private static void createJob(JsonObject data) throws Exception {
-        String body = data.toString();
-        String authHeader = SignatureGenerator.generateSignature("POST", jobUrl, body, appId, privateKeyPath);
+    private static void createJob(String data) throws Exception {
+        String authHeader = SignatureGenerator.generateSignature("POST", jobUrl, data, appId, privateKeyPath);
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(urlPre + jobUrl))
                 .header("Content-Type", "application/json")
                 .header("Authorization", authHeader)
-                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .POST(HttpRequest.BodyPublishers.ofString(data))
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -201,6 +245,7 @@ public class Demo {
     public static String md5(String input) throws Exception {
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(digest);
+        BigInteger bigInt = new BigInteger(1, digest);
+        return bigInt.toString(16);
     }
 }
