@@ -35,5 +35,5 @@ advisable to use a more secure method to store your private key to prevent any l
       and [Demo.java](./java/src/main/java/Demo.java)
     - Example in php: [generate_signature.php](./php/generate_signature.php) and [demo.php](./php/demo.php)
 
-P.S. in java demo, it uses HttpClient that need the jdk11 at least. If u'r using jdk8, u can use the HttpURLConnection
+P.S. in java demo, it uses HttpClient and string block that need the jdk17 at least. If u'r using jdk8, u can use the HttpURLConnection
 or other package instead.
