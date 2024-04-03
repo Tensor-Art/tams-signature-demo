@@ -14,7 +14,7 @@ import java.security.MessageDigest;
 
 // for jdk17
 public class Demo {
-    private static final String urlPre = "endpoint from your app";
+    private static final String urlPre = "https://" + "endpoint from your app";
     private static final String appId = "your app id";
 
     // 需要用以下命令将私钥转为der格式
