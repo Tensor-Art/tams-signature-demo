@@ -93,16 +93,6 @@ const (
 	`
 )
 
-type JobData struct {
-	RequestID string  `json:"request_id"`
-	Stages    []Stage `json:"stages"`
-}
-
-type Stage struct {
-	Type string `json:"type"`
-	// Define other fields as per your requirements
-}
-
 func main() {
 	// 预估算力
 	//getJobCredits()
@@ -111,7 +101,9 @@ func main() {
 	//text2img()
 	// 图生图
 	//img2img("../test.webp")
-
+	//getWorkflowTemplate("676018193025756628")
+	//workflowTemplateCheck()
+	//workflowTemplateJob()
 }
 
 func getJobCredits() {
@@ -153,15 +145,88 @@ func img2img(imgPath string) {
 }
 
 func getWorkflowTemplate(templateId string) {
-	// Implement the logic to get workflow template here
+	authHeader, err := signature.GenerateSignatureHeader("GET", workflowUrl+"/"+templateId, appID, "", privateKeyPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	response, err := sendRequest("GET", urlPre+workflowUrl+"/"+templateId, []byte{}, authHeader)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(response)
 }
 
 func workflowTemplateCheck() {
-	// Implement the logic to check workflow template here
+	data := `
+	{
+		"templateId": "676018193025756628",
+		"fields": {
+			"fieldAttrs": [
+				{
+					"nodeId": "25",
+					"fieldName": "image",
+					"fieldValue": null
+				},
+				{
+					"nodeId": "27",
+					"fieldName": "text",
+					"fieldValue": "1 girl"
+				}
+			]
+		}
+	}
+	`
+	authHeader, err := signature.GenerateSignatureHeader("POST", workflowUrl+"/template/check", appID, data, privateKeyPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	response, err := sendRequest("POST", urlPre+workflowUrl+"/template/check", []byte(data), authHeader)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(response)
 }
 
 func workflowTemplateJob() {
-	// Implement the logic to create a workflow template job here
+	workflowTemplateJobData := `
+	{
+		"request_id": "%s",
+		"templateId": "676018193025756628",
+		"fields": {
+			"fieldAttrs": [
+				{
+					"nodeId": "25",
+					"fieldName": "image",
+					"fieldValue": "4a5c119f-1f57-4a60-bfbc-f11d97758b4e"
+				},
+				{
+					"nodeId": "27",
+					"fieldName": "text",
+					"fieldValue": "1 girl, amber_eyes"
+				}
+			]
+		}
+	}
+	`
+	data := fmt.Sprintf(workflowTemplateJobData, createMD5(time.Now().Unix()))
+	authHeader, err := signature.GenerateSignatureHeader("POST", jobUrl+"/workflow/template", appID, data, privateKeyPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	response, err := sendRequest("POST", urlPre+jobUrl+"/workflow/template", []byte(data), authHeader)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(response)
 }
 
 func createJob(data string) (err error) {
