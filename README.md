@@ -28,12 +28,14 @@ advisable to use a more secure method to store your private key to prevent any l
     app_id = "your app id"
     ```
 
-3. for detailed info, pls refer to the demo code, the python example is the latest if we added something new.
+3. for detailed info, pls refer to the demo code.
 
-    - Example in python: [generate_signature.py](./python/generate_signature.py) and [demo.py](./python/demo.py)
+    - Example in python: [signature.py](./python/generate_signature.py) and [demo.py](./python/demo.py)
     - Example in java: [SignatureGenerator.java](./java/src/main/java/SignatureGenerator.java)
       and [Demo.java](./java/src/main/java/Demo.java)
-    - Example in php: [generate_signature.php](./php/generate_signature.php) and [demo.php](./php/demo.php)
+    - Example in php: [signature.php](./php/generate_signature.php) and [demo.php](./php/demo.php)
+    - Example in go: [generate_signature.go](./golang/signature/generate_signature.go) and [demo.go](./golang/demo.go)
+    - Example in Node.js: [signature.js](./nodejs/signature.js) and [demo.js](./nodejs/demo.js)
 
 P.S. in java demo, it uses HttpClient and string block that need the jdk17 at least. If u'r using jdk8, u can use the HttpURLConnection
 or other package instead.
