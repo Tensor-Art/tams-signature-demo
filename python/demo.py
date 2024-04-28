@@ -235,9 +235,26 @@ def workflow_template_job():
         'Authorization': generate_signature("POST", f"{url_job}/workflow/template", body, app_id, private_key_path)
     })
     print(response.text)
+    response_data = json.loads(response.text)
+    if 'job' in response_data:
+        job_dict = response_data['job']
+        job_id = job_dict.get('id')
+        job_status = job_dict.get('status')
+        print(job_id, job_status)
+        get_job_result(job_id)
+
+
+def get_model(id):
+    response = requests.get(f"{url_pre}/v1/models/{id}", headers={
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': generate_signature("GET", f"/v1/models/{id}", "", app_id, private_key_path)
+    })
+    print(response.text)
 
 
 if __name__ == '__main__':
+    # get_model(645273936655008607)
     # 算力预估
     get_job_credits()
 
